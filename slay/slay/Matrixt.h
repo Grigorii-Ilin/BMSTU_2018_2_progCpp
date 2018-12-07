@@ -6,67 +6,122 @@ using namespace std;
 template <class T>
 class Matrixt
 {
-	T **a;
-	int n, m;
+	T **myMatrix;
+	int rowsCount, columnsCount;
 
 
 public:
 	Matrixt();
-	Matrixt(int n, int m);
+	Matrixt(const int rowsCountF, const int colsCountF);
 	Matrixt(char* name);
 	~Matrixt();
 
 	Matrixt &transp();
 
-};
+	Matrixt<T> & Matrixt:: operator=(const Matrixt &r); // оператор присваивания 
 
-template <class T> 
-Matrixt <T>:: Matrixt(){
-	n=1;
-	m=1;
-	a = new T*[n];
-	a[0]=new T;
-	a[0][0]=1;
-};
 
-template <class T> 
-Matrixt <T>:: Matrixt(int n, int m){
-
-	a = new T*[n];
-	a=new T*[n];
-	for (int i = 0; i < n; i++)
-		a[i]=new T[m];
-};
-
-template <class T> 
-Matrixt <T>::Matrixt(char* name){
-	ifstream f1;
-	f1 = ifstream(name);
-	f1 >> n>>m;
-	a=new T* [n];
-
-	for (int i = 0; i < n; i++)
-	{
-		a[i]=new T[m];
-	
-
-	for (int j = 0; j< m; j++)
-		f1>>a[i][j];		
+	friend ostream &operator<<(ostream &out, const Matrixt<T> &r) {
+		out << endl;
+		out << "Matrix: " << r.rowsCount << " " << r.columnsCount << endl;
+		for (int i = 0; i < r.rowsCount; i++) {
+			for (int j = 0; j < r.columnsCount; j++) {
+				out << r.myMatrix[i][j] << "   ";
+			}
+			out << endl;
+		}
+		return out;
 	}
-	f1.close();
+
 };
 
 
 template <class T>
-Matrixt <T> &Matrixt<T>::transp(){
-	Matrixt *fp;
-	fp=new Matrixt <T>(m, n);
-	for (int i = 0; i < n; i++)
+Matrixt <T>::Matrixt() {
+	rowsCount = 1;
+	columnsCount = 1;
+	myMatrix = new T*[rowsCount];
+	myMatrix[0] = new T;
+	myMatrix[0][0] = 1;
+};
+
+template <class T>
+Matrixt <T>::Matrixt(int rowsCountF, int colsCountF) {
+	rowsCount = rowsCountF;
+	columnsCount = colsCountF;
+
+	myMatrix = new T*[rowsCount];
+	for (int i = 0; i < rowsCount; i++)
+		myMatrix[i] = new T[columnsCount];
+};
+
+template <class T>
+Matrixt <T>::Matrixt(char* filename) {
+	ifstream ifs; 
+	ifs.open(filename, ios::in);
+
+	if (!ifs) {
+		cout << "File not found" << endl;
+	}
+
+	ifs >> rowsCount >> columnsCount;
+	myMatrix = new T*[rowsCount];
+
+	for (int i = 0; i < rowsCount; i++)
 	{
-		for (int j = 0; j < m; j++)
-		{
-			fp->a[j][i]=a[i][j];
+		myMatrix[i] = new T[columnsCount];
+
+		for (int j = 0; j < columnsCount; j++)
+			ifs >> myMatrix[i][j];
+	}
+	ifs.close();
+};
+
+template <class T>
+Matrixt <T>::~Matrixt() {
+	for (int i = 0; i < rowsCount; i++) {
+		delete[] myMatrix[i];
+	}
+
+	delete[] myMatrix;
+}
+
+
+template <class T>
+Matrixt <T> &Matrixt<T>::transp() {
+	Matrixt *resultMatrix;
+	resultMatrix = new Matrixt <T>(columnsCount, rowsCount);
+	for (int i = 0; i < rowsCount; i++)
+	{
+		for (int j = 0; j < columnsCount; j++)		{
+			resultMatrix->myMatrix[j][i] = myMatrix[i][j];
 		}
 	}
-	return *fp;
-}; 
+	return *resultMatrix;
+}
+
+template<class T>
+ Matrixt<T> &Matrixt<T>::operator=(const Matrixt & r){
+	 if (&r==this)  
+		 return *this;
+
+	if (rowsCount!=r.rowsCount||columnsCount!=r.columnsCount)		 {
+		Matrixt <T>::~Matrixt();
+
+		rowsCount = r.rowsCount;
+		myMatrix = new T*[rowsCount];
+			 
+		columnsCount = r.columnsCount;
+		for (int i = 0; i < rowsCount; i++)
+			myMatrix[i] = new T[columnsCount];
+	}
+
+	for (int i = 0; i < rowsCount; i++)	 {
+		for (int j = 0; j < columnsCount ; j++) {
+			myMatrix[i][j] = r.myMatrix[i][j];
+		}
+	}
+
+	return *this;
+ };
+
